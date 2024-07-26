@@ -12,6 +12,7 @@ import (
 
 type ZJson map[string]interface{}
 type ZIntArr []int
+type ZInt64Arr []int64
 type ZStrArr []string
 type StrArrArr [][]string // [["a","b"],["c","d"]]
 
@@ -53,6 +54,17 @@ func (t ZIntArr) Value() (driver.Value, error) {
 	return result, nil
 }
 
+func (t *ZIntArr) Join(sep string) string {
+	str := ""
+	for idx, loc := range *t {
+		str += strconv.Itoa(loc)
+		if idx != len(*t)-1 {
+			str += sep
+		}
+	}
+	return str
+}
+
 func (t *ZIntArr) Scan(v interface{}) error {
 	vtype := reflect.TypeOf(v)
 	switch vtype.String() {
@@ -65,6 +77,44 @@ func (t *ZIntArr) Scan(v interface{}) error {
 		strarr := strings.Split(str, ",")
 		for _, i2 := range strarr {
 			i, _ := strconv.Atoi(i2)
+			*t = append(*t, i)
+		}
+	}
+	return nil
+}
+
+func (t ZInt64Arr) Value() (driver.Value, error) {
+	strarr := []string{}
+	for _, loc := range t {
+		strarr = append(strarr, strconv.FormatInt(loc, 10))
+	}
+	result := strings.Join(strarr, ",")
+	return result, nil
+}
+
+func (t *ZInt64Arr) Join(sep string) string {
+	str := ""
+	for idx, loc := range *t {
+		str += strconv.FormatInt(loc, 10)
+		if idx != len(*t)-1 {
+			str += sep
+		}
+	}
+	return str
+}
+
+func (t *ZInt64Arr) Scan(v interface{}) error {
+	vtype := reflect.TypeOf(v)
+	switch vtype.String() {
+	case "[]uint8":
+		str := string(v.([]byte))
+		if str == "" {
+			*t = []int64{}
+			return nil
+		}
+		strarr := strings.Split(str, ",")
+		for _, i2 := range strarr {
+			i, _ := strconv.ParseInt(i2, 10, 64)
 			*t = append(*t, i)
 		}
 	}
