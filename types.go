@@ -16,7 +16,8 @@ type ZInt64Arr []int64
 type ZStrArr []string
 type StrArrArr [][]string // [["a","b"],["c","d"]]
 
-type IntArrArr [][]int64
+type IntArrArr [][]int
+type Int64ArrArr [][]int64
 type FloatArrArr [][]float64
 type SimpleObj map[string]interface{}      // {"a":1,"b":true,"c":"string","d":3.44}
 type ArrSimpleObj []map[string]interface{} // [{"a":1,"b":true,"c":"string","d":3.44}, {"f":123}]
@@ -151,7 +152,7 @@ func (t IntArrArr) Value() (driver.Value, error) {
 	for _, arr := range t {
 		arr2str := []string{}
 		for _, ii := range arr {
-			arr2str = append(arr2str, strconv.FormatInt(int64(ii), 10))
+			arr2str = append(arr2str, strconv.Itoa(ii))
 		}
 		strarr = append(strarr, strings.Join(arr2str, ","))
 	}
@@ -160,6 +161,43 @@ func (t IntArrArr) Value() (driver.Value, error) {
 }
 
 func (t *IntArrArr) Scan(v interface{}) error {
+	vtype := reflect.TypeOf(v)
+	switch vtype.String() {
+	case "[]uint8":
+		str := string(v.([]byte))
+		if str == "" {
+			*t = [][]int{}
+			return nil
+		}
+		strarr := strings.Split(str, ";")
+		var arrArr [][]int
+		for _, str := range strarr {
+			arr := strings.Split(str, ",")
+			intArr := []int{}
+			for _, strInArr := range arr {
+				ss, _ := strconv.Atoi(strInArr)
+				intArr = append(intArr, ss)
+			}
+			arrArr = append(arrArr, intArr)
+		}
+		*t = arrArr
+	}
+	return nil
+}
+func (t Int64ArrArr) Value() (driver.Value, error) {
+	strarr := []string{}
+	for _, arr := range t {
+		arr2str := []string{}
+		for _, ii := range arr {
+			arr2str = append(arr2str, strconv.FormatInt(int64(ii), 10))
+		}
+		strarr = append(strarr, strings.Join(arr2str, ","))
+	}
+	result := strings.Join(strarr, ";")
+	return result, nil
+}
+
+func (t *Int64ArrArr) Scan(v interface{}) error {
 	vtype := reflect.TypeOf(v)
 	switch vtype.String() {
 	case "[]uint8":
