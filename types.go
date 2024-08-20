@@ -23,6 +23,7 @@ type SimpleObj map[string]interface{}      // {"a":1,"b":true,"c":"string","d":3
 type ArrSimpleObj []map[string]interface{} // [{"a":1,"b":true,"c":"string","d":3.44}, {"f":123}]
 type ZArrObj []map[string]interface{}
 type ZIntObj map[int]int
+type IntMap map[int]interface{}
 type ZTime time.Time
 type ZItemList []ZItem
 type ZItem struct {
@@ -42,6 +43,16 @@ func (t ZJson) Value() (driver.Value, error) {
 }
 
 func (t *ZJson) Scan(v interface{}) error {
+	json.Unmarshal(v.([]byte), t)
+	return nil
+}
+
+func (t IntMap) Value() (driver.Value, error) {
+	tstring, err := json.Marshal(t)
+	return tstring, err
+}
+
+func (t *IntMap) Scan(v interface{}) error {
 	json.Unmarshal(v.([]byte), t)
 	return nil
 }
