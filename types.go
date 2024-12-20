@@ -490,8 +490,8 @@ func NewSet[T comparable]() *Set[T] {
 	return &set
 }
 
-func (t Set) Value() (driver.Value, error) {
-	list := Set.List()
+func (t Set[T]) Value() (driver.Value, error) {
+	list := t.List()
 	tstring, err := json.Marshal(list)
 	return tstring, err
 }
