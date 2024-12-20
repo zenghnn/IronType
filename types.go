@@ -479,3 +479,74 @@ func (t *ZTime) UnmarshalJSON(b []byte) error {
 	*t = ZTime(ext)
 	return nil
 }
+
+// 集合 set 
+// 定义一个泛型类型的集合
+type Set[T comparable] map[T]struct{}
+
+// 创建一个新的集合
+func NewSet[T comparable]() *Set[T] {
+	set := make(Set[T]) // 新建一个空集合
+	return &set
+}
+
+func (t Set) Value() (driver.Value, error) {
+	list := Set.List()
+	tstring, err := json.Marshal(list)
+	return tstring, err
+}
+
+func (t *Set[T]) Scan(v interface{}) error {
+	list := []T{}
+	json.Unmarshal(v.([]byte), &list)
+	t.AddList(list)
+	return nil
+}
+
+// 添加元素
+func (set *Set[T]) Add(key T) {
+	(*set)[key] = struct{}{}
+}
+
+// 移除元素
+func (set *Set[T]) Remove(key T) {
+	delete(*set, key)
+}
+
+// 检查元素是否存在
+func (set *Set[T]) Contains(key T) bool {
+	_, exists := (*set)[key]
+	return exists
+}
+
+// 获取集合的长度
+func (set *Set[T]) Len() int {
+	return len(*set)
+}
+
+// 批量添加元素
+func (set *Set[T]) AddList(list []T) {
+	for _, key := range list {
+		set.Add(key)
+	}
+}
+
+// 列出所有元素
+func (set *Set[T]) List() []T {
+	list := make([]T, 0, len(*set))
+	for key := range *set {
+		list = append(list, key)
+	}
+	return list
+}
+
+// 交集
+func (set *Set[T]) Intersect(another Set[T]) (crossSet *Set[T]) {
+	intersection := Set[T]{}
+	for elem := range another {
+		if set.Contains(elem) {
+			intersection.Add(elem)
+		}
+	}
+	return &intersection
+}
