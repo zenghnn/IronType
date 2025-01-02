@@ -499,6 +499,9 @@ func (t Set[T]) Value() (driver.Value, error) {
 func (t *Set[T]) Scan(v interface{}) error {
 	list := []T{}
 	json.Unmarshal(v.([]byte), &list)
+	if t==nil{
+		t = NewSet[T]()
+	}
 	t.AddList(list)
 	return nil
 }
