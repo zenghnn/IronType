@@ -17,6 +17,7 @@ type ZStrArr []string
 type StrArrArr [][]string // [["a","b"],["c","d"]]
 
 type IntArrArr [][]int
+type Int3Arr [][]int   //[[[],[]],[[],[]]]
 type Int64ArrArr [][]int64
 type FloatArrArr [][]float64
 type SimpleObj map[string]interface{}      // {"a":1,"b":true,"c":"string","d":3.44}
@@ -195,6 +196,55 @@ func (t *IntArrArr) Scan(v interface{}) error {
 	}
 	return nil
 }
+
+// 三维数组
+func (t Int3Arr) Value() (driver.Value, error) {
+	strarr := []string{}
+	for _, arr := range t {
+		arr2str := []string{}
+		for _, ii := range arr {
+			arr3str := []string{}
+			for _, iii := range ii {
+				arr3str = append(arr3str, strconv.Itoa(iii))
+			}
+			arr2str = append(arr2str, strings.Join(arr3str, ","))
+		}
+		strarr = append(strarr, strings.Join(arr2str, ";"))
+	}
+	result := strings.Join(strarr, "|")
+	return result, nil
+}
+
+func (t *Int3Arr) Scan(v interface{}) error {
+	vtype := reflect.TypeOf(v)
+	switch vtype.String() {
+	case "[]uint8":
+		str := string(v.([]byte))
+		if str == "" {
+			*t = [][][]int{}
+			return nil
+		}
+		strarr := strings.Split(str, "|")
+		var arrArr [][][]int
+		for _, str := range strarr { // 1,1;2,2
+			arr := strings.Split(str, ";")
+			intArr := [][]int{}
+			for _, strInArr := range arr {
+				arr3 := strings.Split(strInArr, ",")
+				int3Arr := []int{}
+				for _, sub3 := range arr3 {
+					ss, _ := strconv.Atoi(sub3)
+					int3Arr = append(int3Arr, ss)
+				}
+				intArr = append(intArr, int3Arr)
+			}
+			arrArr = append(arrArr, intArr)
+		}
+		*t = arrArr
+	}
+	return nil
+}
+
 func (t Int64ArrArr) Value() (driver.Value, error) {
 	strarr := []string{}
 	for _, arr := range t {
