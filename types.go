@@ -17,7 +17,7 @@ type ZStrArr []string
 type StrArrArr [][]string // [["a","b"],["c","d"]]
 
 type IntArrArr [][]int
-type Int3Arr [][]int   //[[[],[]],[[],[]]]
+type Int3Arr [][][]int   //[[[],[]],[[],[]]]
 type Int64ArrArr [][]int64
 type FloatArrArr [][]float64
 type SimpleObj map[string]interface{}      // {"a":1,"b":true,"c":"string","d":3.44}
