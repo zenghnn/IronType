@@ -25,6 +25,7 @@ type ArrSimpleObj []map[string]interface{} // [{"a":1,"b":true,"c":"string","d":
 type ZArrObj []map[string]interface{}
 type ZIntObj map[int]int
 type IntMap map[int]interface{}
+type Map2Time map[int]time.Time
 type ZTime time.Time
 type ZItemList []ZItem
 type ZItem struct {
@@ -602,4 +603,25 @@ func (set *Set[T]) Intersect(another Set[T]) (crossSet *Set[T]) {
 		}
 	}
 	return &intersection
+}
+
+func (t Map2Time) Value() (driver.Value, error) {
+	marshalMap := map[int]string{}
+	for k, v := range t {
+		marshalMap[k] = v.Format(time.DateTime)
+	}
+	tstring, err := json.Marshal(marshalMap)
+	return tstring, err
+}
+
+func (t *Map2Time) Scan(v interface{}) error {
+	marshalMap := map[int]string{}
+	json.Unmarshal(v.([]byte), &marshalMap)
+	if (*t) == nil {
+		(*t) = map[int]time.Time{}
+	}
+	for i, s := range marshalMap {
+		(*t)[i], _ = time.Parse(time.DateTime, s)
+	}
+	return nil
 }
